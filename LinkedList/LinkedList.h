@@ -79,7 +79,12 @@ public:
       return (current == rhs.current);
     }
 
+    ~linked_list_iterator() {
+      current = nullptr;
+    }
+
   private:
+
     LinkedList& list;
     Node * current;
 
@@ -136,9 +141,14 @@ public:
     return iterator(*this, back);
   }
 
-  //TODO: code insert
-  iterator insert(iterator position) {
-    return iterator(*this, front);
+  iterator insert(iterator position, const T& value) {
+    Node * toAdd = new Node(value);
+    position.current->prev->next = toAdd;
+    toAdd->prev = position.current->prev;
+    position.current->prev = toAdd;
+    toAdd->next = position.current;
+    ++nodeCount;
+    return iterator(*this, toAdd);
   }
 
   iterator erase(iterator position) {

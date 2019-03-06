@@ -2,45 +2,47 @@
 #include <string>
 #include <iostream>
 #include <list>
-#include <vector>
 #include <iterator>
 #include <algorithm>
 
 using namespace std;
 
+void printList(list<string> list) {
+  for (auto i = list.begin(); i != list.end(); ++i) {
+    cout << *i << ", ";
+  }
+  cout << endl;
+}
+
+void printList(LinkedList<string> list) {
+  for (auto i = list.begin(); i != list.end(); ++i) {
+    cout << *i << ", ";
+  }
+  cout << endl;
+}
+
 int main()
 {
 
-  vector<string> words;
+  list<string> stl_list;
+  LinkedList<string> my_list;
   for (int i = 'A'; i < 'Z' + 1; ++i) {
-    words.push_back(string(1, i));
+    stl_list.push_back(string(1, i));
+    my_list.push_back(string(1, i));
   }
 
-  LinkedList<string> string_list;
+  printList(stl_list);
 
-  auto head = string_list.begin();
-  auto foo = string_list.push_front("foo");
-  string_list.erase(foo);
-  auto tail = string_list.end();
+  printList(my_list);
 
-  if (head == tail) {
-    cout << "begin() and end() iterators are equal when list is empty." << endl;
-  }
+  auto r_position = std::find(stl_list.begin(), stl_list.end(), "R");
+  stl_list.insert(r_position, "7");
+  auto s_position = stl_list.erase(stl_list.begin(), r_position);
+  printList(stl_list);
 
-  for (auto& it : words) {
-    string_list.push_back(it);
-  }
+  auto my_r = std::find(my_list.begin(), my_list.end(), "R");
+  my_list.insert(my_r, "7");
+  cout << my_list.toString() << endl;
+  auto my_s = my_list.erase(my_list.begin(), my_r);
 
-  for (LinkedList<string>::iterator it = string_list.begin(); it != string_list.end(); ++it) {
-    cout << *it << endl;
-  }
-
-  //ostream_iterator<string> out_it(cout, ", ");
-  //copy(string_list.begin(), string_list.end(), out_it);
-
-  cout << string_list.toString() << endl;
-  auto r_position = std::find(string_list.begin(), string_list.end(), "R");   
-  auto s_position = string_list.erase(string_list.begin(), r_position);
-  cout << *s_position << endl;
-  cout << string_list.toString() << endl;
 }
