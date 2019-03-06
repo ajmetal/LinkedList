@@ -3,112 +3,234 @@
 #include <string>
 #include <sstream>
 #include <exception>
+#include <iterator>
+#include <cassert>
 
 template<class T>
 class LinkedList {
 
-   class Node {
-   public:
+  class Node {
+  public:
 
-      Node(const T& value)
-         : value(value)
-         , next(nullptr)
-         , prev(nullptr)
-      {}
+    Node(const T& value)
+      : value(value)
+      , next(nullptr)
+      , prev(nullptr)
+    {}
 
-      T value;
-      Node * next;
-      Node * prev;
+    T value;
+    Node * next;
+    Node * prev;
 
-   };
+  };
 
 public:
 
-   LinkedList() 
-      : nodeCount(0)
-      , front(nullptr)
-      , back(nullptr)
-   {}
+  class linked_list_iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
+    friend class LinkedList;
 
-   int size() const {
-      return nodeCount;
-   }
+  public:
 
-   bool empty() const {
-      return 0 == nodeCount;
-   }
+    linked_list_iterator(LinkedList& list, Node * start)
+      : list(list)
+      , current(start)
+    {}
 
-   //TODO: return iterator to newly created value
-   void push_front(const T& value) {
-      Node * toAdd = new Node(value);
-      toAdd->next = front;
-      front = toAdd;
-      ++nodeCount;
-      if (1 == nodeCount) {
-         back = front;
+    T& operator*() const {
+      assert(current != nullptr && "An attempt was made to dereference the end of a list.");
+      return current->value;
+    }
+
+    T& operator->() const {
+      assert(current != nullptr && "An attempt was made to dereference the end of a list.");
+      return current->value;
+    }
+
+    linked_list_iterator& operator=(const linked_list_iterator& rhs) {
+      current = rhs.current;
+      list = rhs.list;
+      return *this;
+    }
+
+    //post-fix
+    linked_list_iterator& operator++(int) {
+      if (current == nullptr) {
+        return *this;
       }
-   }
+      linked_list_iterator& ret = *this;
+      current = current->next;
+      return ret;
+    }
 
-   //TODO: return iterator to newly created value
-   void push_back(const T& value) {
-      Node * toAdd = new Node(value);
-      toAdd->prev = back; 
-      if (nullptr != back) {
-         back->next = toAdd;
+    //prefix
+    linked_list_iterator& operator++() {
+      if (current == nullptr) {
+        return *this;
       }
+      current = current->next;
+      return *this;
+    }
+
+    bool operator!=(const linked_list_iterator & rhs) const {
+      return (current != rhs.current);
+    }
+
+    bool operator==(const linked_list_iterator & rhs) const {
+      return (current == rhs.current);
+    }
+
+  private:
+    LinkedList& list;
+    Node * current;
+
+  };
+
+  typedef linked_list_iterator iterator;
+
+  LinkedList()
+    : nodeCount(0)
+    , front(nullptr)
+    , back(nullptr)
+  {}
+
+  int size() const {
+    return nodeCount;
+  }
+
+  bool empty() const {
+    return (0 == nodeCount);
+  }
+
+  iterator begin() {
+    return iterator(*this, front);
+  }
+
+  iterator end() {
+    return iterator(*this, nullptr);
+  }
+
+  iterator push_front(const T& value) {
+    Node * toAdd = new Node(value);
+    toAdd->next = front;
+    front = toAdd;
+    ++nodeCount;
+    if (1 == nodeCount) {
+      back = front;
+    }
+    return iterator(*this, front);
+  }
+
+  iterator push_back(const T& value) {
+    Node * toAdd = new Node(value);
+
+    if (nullptr != back) {
+      back->next = toAdd;
+      toAdd->prev = back;
       back = toAdd;
-      if (0 == nodeCount) {
-         front = back;
-      }
-      ++nodeCount;
-   }
+    }
+    else {
+      front = back = toAdd; 
+    }
 
-   T pop_front() {
-      if (0 == nodeCount) {
-         throw std::out_of_range (
-            "An attempt was made to pop_front from an empty list."
-         );
-      }
-      Node * ret = front;
-      front = front->next;
-      T copy = ret->value;
-      delete ret;
-      --nodeCount;
-      return copy;
-   }
+    ++nodeCount;
+    return iterator(*this, back);
+  }
 
-   T pop_back() {
-      if (0 == nodeCount) {
-         throw std::out_of_range (
-            "An attempt was made to pop_back from an empty list."
-         );
-      }
-      Node * ret = back;
-      back = back->prev;
-      T copy = ret->value;
-      delete ret;
-      --nodeCount;
-      return copy;
-   }
+  //TODO: code insert
+  iterator insert(iterator position) {
+    return iterator(*this, front);
+  }
 
-   std::string toString() const {
-      std::stringstream ss;
-      ss << "[";
-      Node * current = front;
-      while (nullptr != current) {
-         ss << " " << current->value << ",";
-         current = current->next;
-      }
-      ss.seekp(-1, std::ios_base::end);
-      ss << " ]";
-      return ss.str();
-   }
+  iterator erase(iterator position) {
+    Node * toRemove = position.current;
+    if (toRemove->prev == nullptr) {
+      pop_front();
+      return begin();
+    }
+    else if (toRemove->next == nullptr) {
+      pop_back();
+      return end();
+    }
+
+    toRemove->prev->next = toRemove->next;
+    iterator nextPosition = iterator(*this, toRemove->next);
+    delete toRemove;
+    toRemove = NULL;
+    --nodeCount;
+    return nextPosition;
+
+  }
+  
+  iterator erase(iterator start, iterator end) {
+    while (start != end) {
+     start = erase(start);
+    }
+    return end;
+  }
+
+  T pop_front() {
+    if (0 == nodeCount) {
+      throw std::out_of_range(
+        "An attempt was made to pop_front from an empty list."
+      );
+    }
+    Node * ret = front;
+    front = front->next;
+
+    if (1 == nodeCount) {
+      back = front;
+    }
+    else {
+      front->prev = nullptr;
+    }
+    T copy = ret->value;
+    delete ret;
+    ret = NULL;
+    --nodeCount;
+    return copy;
+  }
+
+  T pop_back() {
+    if (0 == nodeCount) {
+      throw std::out_of_range(
+        "An attempt was made to pop_back from an empty list."
+      );
+    }
+    Node * ret = back;
+    back = back->prev;
+
+    if (1 == nodeCount) {
+      front = back;
+    }
+    else {
+      back->next = nullptr;
+    }
+    T copy = ret->value;
+    delete ret;
+    ret = NULL;
+    --nodeCount;
+    return copy;
+  }
+
+  std::string toString() const {
+    std::stringstream ss;
+    ss << "[";
+    Node * current = front;
+    while (nullptr != current) {
+      ss << " " << current->value << ",";
+      current = current->next;
+    }
+    ss.seekp(-1, std::ios_base::end);
+    ss << " ]";
+    return ss.str();
+  }
 
 private:
 
-   Node * front;
-   Node * back;
-   int nodeCount;
+  Node * front;
+  Node * back;
+  int nodeCount;
+
 };
 
 
