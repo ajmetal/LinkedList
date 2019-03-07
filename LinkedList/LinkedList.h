@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-#include <sstream>
 #include <exception>
 #include <iterator>
 #include <cassert>
@@ -68,6 +66,25 @@ public:
         return *this;
       }
       current = current->next;
+      return *this;
+    }
+
+    //post-fix
+    linked_list_iterator& operator--(int) {
+      if (current == nullptr) {
+        return *this;
+      }
+      linked_list_iterator& ret = *this;
+      current = current->prev;
+      return ret;
+    }
+
+    //prefix
+    linked_list_iterator& operator--() {
+      if (current == nullptr) {
+        return *this;
+      }
+      current = current->prev;
       return *this;
     }
 
@@ -222,17 +239,9 @@ public:
     return copy;
   }
 
-  std::string toString() const {
-    std::stringstream ss;
-    ss << "[";
-    Node * current = front;
-    while (nullptr != current) {
-      ss << " " << current->value << ",";
-      current = current->next;
-    }
-    ss.seekp(-1, std::ios_base::end);
-    ss << " ]";
-    return ss.str();
+  ~LinkedList()
+  {
+    erase(begin(), end());
   }
 
 private:
