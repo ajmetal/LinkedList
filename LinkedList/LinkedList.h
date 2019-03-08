@@ -62,9 +62,10 @@ public:
 
     //prefix
     linked_list_iterator& operator++() {
-      if (current != nullptr) {
-        current = current->next;
+      if (current == nullptr) {
+        return *this;
       }
+      current = current->next;
       return *this;
     }
 
@@ -112,6 +113,27 @@ public:
     , front(nullptr)
     , back(nullptr)
   {}
+
+  LinkedList(const LinkedList& rhs)
+  {
+
+    nodeCount = 0;
+    front = nullptr;
+    back = nullptr;
+
+    if (rhs.front == nullptr) {
+      return;
+    }
+
+    push_back(rhs.front->value);
+    Node * right_node = rhs.front->next;
+
+    while (right_node != nullptr) {
+      push_back(right_node->value);
+      right_node = right_node->next;
+    }
+
+  }
 
   int size() const {
     return nodeCount;

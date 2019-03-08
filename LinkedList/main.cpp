@@ -26,50 +26,64 @@ void printList(LinkedList<string> list) {
 int main()
 {
 
-  //list<string> stl_list;
-  //LinkedList<string> my_list;
-  //for (int i = 'A'; i < 'Z' + 1; ++i) {
-  //  stl_list.push_back(string(1, i));
-  //  my_list.push_back(string(1, i));
-  //}
+  list<string> stl_list;
+  LinkedList<string> my_list;
+  for (int i = 'A'; i < 'Z' + 1; ++i) {
+    stl_list.push_back(string(1, i));
+    my_list.push_back(string(1, i));
+  }
 
-  //printList(stl_list);
+  printList(stl_list);
 
-  //printList(my_list);
+  printList(my_list);
 
-  //auto r_position = std::find(stl_list.begin(), stl_list.end(), "R");
+  auto first = my_list.begin();
+  auto last = my_list.end();
+
+  while (first != last) {
+    if (*first == "R") break;
+    ++first;
+  }
+  
+  //auto r_position = find(stl_list.begin(), stl_list.end(), "R");
+
+  auto x_pos = find_if(my_list.begin(), my_list.end(), [](string s) {
+    return (s == "X");
+  
+  });
+
   //stl_list.insert(r_position, "7");
   //auto s_position = stl_list.erase(stl_list.begin(), r_position);
   //printList(stl_list);
 
-  //auto my_r = std::find(my_list.begin(), my_list.end(), "R");
+  //auto my_r = find(my_list.begin(), my_list.end(), "R");
   //my_list.insert(my_r, "7");
   //printList(my_list);
   //auto my_s = my_list.erase(my_list.begin(), my_r);
 
-  stack<string> stl_stack;
-  Stack<string> my_stack;
+  //stack<string> stl_stack;
+  //Stack<string> my_stack;
 
-  for (int i = 'A'; i < 'Z' + 1; ++i) {
-    stl_stack.push(string(1, i));
-    my_stack.push(string(1, i));
-  }
+  //for (int i = 'A'; i < 'Z' + 1; ++i) {
+  //  stl_stack.push(string(1, i));
+  //  my_stack.push(string(1, i));
+  //}
 
-  my_stack.top() = "7";
+  //my_stack.top() = "7";
 
-  int size = my_stack.size();
-  for (int i = 0; i < size; ++i) {
-    cout << my_stack.pop() << ", ";
-  }
+  //int size = my_stack.size();
+  //for (int i = 0; i < size; ++i) {
+  //  cout << my_stack.pop() << ", ";
+  //}
 
-  cout << endl;
+  //cout << endl;
 
-  for (int i = 0; i < size; ++i) {
-    cout << stl_stack.top() << ", ";
-    stl_stack.pop();
-  }
+  //for (int i = 0; i < size; ++i) {
+  //  cout << stl_stack.top() << ", ";
+  //  stl_stack.pop();
+  //}
 
-  cout << endl;
+  //cout << endl;
 
 
 
