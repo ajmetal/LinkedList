@@ -62,10 +62,9 @@ public:
 
     //prefix
     linked_list_iterator& operator++() {
-      if (current == nullptr) {
-        return *this;
+      if (current != nullptr) {
+        current = current->next;
       }
-      current = current->next;
       return *this;
     }
 
@@ -81,10 +80,9 @@ public:
 
     //prefix
     linked_list_iterator& operator--() {
-      if (current == nullptr) {
-        return *this;
+      if (current != nullptr) {
+        current = current->prev;
       }
-      current = current->prev;
       return *this;
     }
 

@@ -35,8 +35,6 @@ public:
     return list.size();
   }
 
-
-
 private:
 
   LinkedList<T> list;

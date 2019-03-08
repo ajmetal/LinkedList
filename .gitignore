@@ -19,6 +19,9 @@
 *.out
 *.app
 
+*.sln
+*.vcxproj
+
 build/
 build_*/
 
