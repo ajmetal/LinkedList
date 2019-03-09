@@ -9,16 +9,11 @@
 
 using namespace std;
 
-void printList(list<string> list) {
-  for (auto i = list.begin(); i != list.end(); ++i) {
-    cout << *i << ", ";
-  }
-  cout << endl;
-}
-
-void printList(LinkedList<string> list) {
-  for (auto i = list.begin(); i != list.end(); ++i) {
-    cout << *i << ", ";
+template<typename Container>
+void print_container(const Container & container) {
+  auto itr = begin(container);
+  while (itr != end(container)) {
+    cout << ", " << *itr++;
   }
   cout << endl;
 }
@@ -33,9 +28,8 @@ int main()
     my_list.push_back(string(1, i));
   }
 
-  printList(stl_list);
-
-  printList(my_list);
+  print_container(stl_list);
+  print_container(my_list);
 
   auto first = my_list.begin();
   auto last = my_list.end();
@@ -49,7 +43,6 @@ int main()
 
   auto x_pos = find_if(my_list.begin(), my_list.end(), [](string s) {
     return (s == "X");
-  
   });
 
   //stl_list.insert(r_position, "7");

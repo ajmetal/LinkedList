@@ -24,12 +24,12 @@ class LinkedList {
 
 public:
 
-  class linked_list_iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
+  class iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
     friend class LinkedList;
 
   public:
 
-    linked_list_iterator(LinkedList& list, Node * start)
+    iterator(LinkedList& list, Node * start)
       : list(list)
       , current(start)
     {}
@@ -44,58 +44,62 @@ public:
       return current->value;
     }
 
-    linked_list_iterator& operator=(const linked_list_iterator& rhs) {
+    iterator& operator=(const iterator& rhs) {
       current = rhs.current;
       list = rhs.list;
       return *this;
     }
 
     //post-fix
-    linked_list_iterator& operator++(int) {
+    iterator operator++(int) {
       if (current == nullptr) {
         return *this;
       }
-      linked_list_iterator& ret = *this;
+      iterator ret = *this;
       current = current->next;
       return ret;
     }
 
     //prefix
-    linked_list_iterator& operator++() {
-      if (current == nullptr) {
-        return *this;
+    iterator& operator++() {
+      if (current != nullptr) {
+        current = current->next;
       }
-      current = current->next;
       return *this;
     }
 
     //post-fix
-    linked_list_iterator& operator--(int) {
+    iterator& operator--(int) {
       if (current == nullptr) {
+        iterator& ret = *this;
+        current = list.back;
         return *this;
       }
-      linked_list_iterator& ret = *this;
+      iterator& ret = *this;
       current = current->prev;
       return ret;
     }
 
     //prefix
-    linked_list_iterator& operator--() {
+    iterator& operator--() {
       if (current != nullptr) {
         current = current->prev;
+      }
+      else {
+        current = list.back;
       }
       return *this;
     }
 
-    bool operator!=(const linked_list_iterator & rhs) const {
+    bool operator!=(const iterator & rhs) const {
       return (current != rhs.current);
     }
 
-    bool operator==(const linked_list_iterator & rhs) const {
+    bool operator==(const iterator & rhs) const {
       return (current == rhs.current);
     }
 
-    ~linked_list_iterator() {
+    ~iterator() {
       current = nullptr;
     }
 
@@ -105,8 +109,6 @@ public:
     Node * current;
 
   };
-
-  typedef linked_list_iterator iterator;
 
   LinkedList()
     : nodeCount(0)
@@ -150,6 +152,15 @@ public:
   iterator end() {
     return iterator(*this, nullptr);
   }
+
+  //TODO: implement const iterators
+  //iterator begin() const {
+  //  return iterator(*this, front);
+  //}
+
+  //iterator end() const {
+  //  return iterator(*this, nullptr);
+  //}
 
   iterator push_front(const T& value) {
     Node * toAdd = new Node(value);
