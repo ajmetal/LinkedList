@@ -3,6 +3,7 @@
 #include <exception>
 #include <iterator>
 #include <cassert>
+#include <algorithm>
 
 template<class T>
 class LinkedList {
@@ -29,7 +30,7 @@ public:
 
   public:
 
-    iterator(LinkedList& list, Node * start)
+    explicit iterator(LinkedList& list, Node * start)
       : list(list)
       , current(start)
     {}
@@ -69,13 +70,13 @@ public:
     }
 
     //post-fix
-    iterator& operator--(int) {
+    iterator operator--(int) {
       if (current == nullptr) {
-        iterator& ret = *this;
+        iterator ret = *this;
         current = list.back;
-        return *this;
+        return ret;
       }
-      iterator& ret = *this;
+      iterator ret = *this;
       current = current->prev;
       return ret;
     }
@@ -110,7 +111,7 @@ public:
 
   };
 
-  LinkedList()
+  explicit LinkedList()
     : nodeCount(0)
     , front(nullptr)
     , back(nullptr)
@@ -118,22 +119,60 @@ public:
 
   LinkedList(const LinkedList& rhs)
   {
-
-    nodeCount = 0;
-    front = nullptr;
-    back = nullptr;
-
-    if (rhs.front == nullptr) {
-      return;
+    if (&rhs != this) {
+      clear();
+      copy_nodes(rhs);
     }
 
-    push_back(rhs.front->value);
-    Node * right_node = rhs.front->next;
+  }
 
-    while (right_node != nullptr) {
-      push_back(right_node->value);
-      right_node = right_node->next;
+  LinkedList& operator=(const LinkedList& rhs) {
+    if (&rhs != this) {
+      clear();
+      copy_nodes(rhs);
     }
+    return *this;
+  }
+
+  LinkedList& operator=(LinkedList&& rhs) {
+    if (&rhs != this) {
+      erase(begin(), end());
+
+      front = rhs.front;
+      back = rhs.back;
+      nodeCount = rhs.nodeCount;
+
+      rhs.front = nullptr;
+      rhs.back = nullptr;
+      rhs.nodeCount = 0;
+      
+    }
+    return *this;
+  }
+
+  //TODO: make this argument const
+  bool operator==(LinkedList& rhs) {
+
+    if (&rhs == this) {
+      return true;
+    }
+
+    if (nodeCount != rhs.nodeCount) {
+      return false;
+    }
+
+    auto left = begin();
+    auto right = rhs.begin();
+
+    while (left != end()) {
+      if (*left != *right) {
+        return false;
+      }
+      ++left;
+      ++right;
+    }
+
+    return true;
 
   }
 
@@ -153,12 +192,12 @@ public:
     return iterator(*this, nullptr);
   }
 
-  //TODO: implement const iterators
-  //iterator begin() const {
+  ////TODO: implement const iterators
+  //const iterator begin() const {
   //  return iterator(*this, front);
   //}
 
-  //iterator end() const {
+  //const iterator end() const {
   //  return iterator(*this, nullptr);
   //}
 
@@ -226,6 +265,13 @@ public:
     return end;
   }
 
+  void clear() {
+    erase(begin(), end());
+    front = nullptr;
+    back = nullptr;
+    nodeCount = 0;
+  }
+
   T pop_front() {
     if (0 == nodeCount) {
       throw std::out_of_range(
@@ -276,6 +322,21 @@ public:
   }
 
 private:
+
+  void copy_nodes(const LinkedList& rhs) {
+
+    if (rhs.front == nullptr) {
+      return;
+    }
+
+    push_back(rhs.front->value);
+    Node * right_node = rhs.front->next;
+
+    while (right_node != nullptr) {
+      push_back(right_node->value);
+      right_node = right_node->next;
+    }
+  }
 
   Node * front;
   Node * back;
