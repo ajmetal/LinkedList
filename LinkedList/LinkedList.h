@@ -1,7 +1,6 @@
 #pragma once
 
 #include <exception>
-#include <iterator>
 #include <cassert>
 #include <algorithm>
 
@@ -11,58 +10,39 @@ class LinkedList {
   class Node {
   public:
 
-    Node(const T& value)
-      : value(value)
-      , next(nullptr)
-      , prev(nullptr)
-    {}
-
     T value;
     Node * next;
     Node * prev;
+
+    Node(const T& value, Node * next = nullptr, Node * prev = nullptr)
+      : value(value)
+      , next(next)
+      , prev(prev)
+    {}
 
   };
 
 public:
 
-  class iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
-    friend class LinkedList;
+  class const_iterator {
+    friend class LinkedList<T>;
 
   public:
 
-    explicit iterator(LinkedList& list, Node * start)
-      : list(list)
-      , current(start)
-    {}
+    const_iterator(Node * start = nullptr)
+      : current(start)
+    { }
 
-    T& operator*() const {
-      assert(current != nullptr && "An attempt was made to dereference the end of a list.");
-      return current->value;
+    const T& operator*() const {
+      return get_value();
     }
 
-    T& operator->() const {
-      assert(current != nullptr && "An attempt was made to dereference the end of a list.");
-      return current->value;
-    }
-
-    iterator& operator=(const iterator& rhs) {
-      current = rhs.current;
-      list = rhs.list;
-      return *this;
-    }
-
-    //post-fix
-    iterator operator++(int) {
-      if (current == nullptr) {
-        return *this;
-      }
-      iterator ret = *this;
-      current = current->next;
-      return ret;
+    const T& operator->() const {
+      return get_value();
     }
 
     //prefix
-    iterator& operator++() {
+    const_iterator& operator++() {
       if (current != nullptr) {
         current = current->next;
       }
@@ -70,48 +50,129 @@ public:
     }
 
     //post-fix
-    iterator operator--(int) {
+    const_iterator operator++(int) {
       if (current == nullptr) {
-        iterator ret = *this;
-        current = list.back;
-        return ret;
+        return *this;
       }
-      iterator ret = *this;
-      current = current->prev;
+      const_iterator ret = *this;
+      ++(*this);
       return ret;
     }
 
-    //prefix
-    iterator& operator--() {
-      if (current != nullptr) {
-        current = current->prev;
-      }
-      else {
-        current = list.back;
-      }
-      return *this;
-    }
+    ////prefix
+    //const_iterator& operator--() {
+    //  if (current != nullptr) {
+    //    current = current->prev;
+    //  }
+    //  else {
+    //    current = list.back;
+    //  }
+    //  return *this;
+    //}
 
-    bool operator!=(const iterator & rhs) const {
+    ////post-fix
+    //const_iterator operator--(int) {
+    //  if (current == nullptr) {
+    //    const_iterator ret = *this;
+    //    current = list.back;
+    //    return ret;
+    //  }
+    //  const_iterator ret = *this;
+    //  --(*this);
+    //  return ret;
+    //}
+
+    bool operator!=(const const_iterator & rhs) const {
       return (current != rhs.current);
     }
 
-    bool operator==(const iterator & rhs) const {
+    bool operator==(const const_iterator & rhs) const {
       return (current == rhs.current);
     }
 
-    ~iterator() {
+    ~const_iterator() {
       current = nullptr;
     }
 
-  private:
+  protected:
 
-    LinkedList& list;
+    T& get_value() const {
+      assert(current != nullptr && "An attempt was made to dereference the end of a list.");
+      return current->value;
+    }
+
     Node * current;
 
   };
 
-  explicit LinkedList()
+  class iterator : public const_iterator {
+    
+  public:
+
+    iterator(Node * start = nullptr) 
+      : const_iterator{ start } {
+      this->current = start;
+    }
+
+    T& operator*() {
+      return const_iterator::get_value();
+    }
+
+    T& operator->() {
+      return const_iterator::get_value();
+    }
+
+    //post-fix
+    iterator operator++(int) {
+      if (this->current == nullptr) {
+        return *this;
+      }
+      iterator ret = *this;
+      this->current = this->current->next;
+      return ret;
+    }
+
+    //prefix
+    iterator& operator++() {
+      if (this->current != nullptr) {
+        this->current = this->current->next;
+      }
+      return *this;
+    }
+
+    ////post-fix
+    //iterator operator--(int) {
+    //  if (this->current == nullptr) {
+    //    iterator ret = *this;
+    //    this->current = this->list.back;
+    //    return ret;
+    //  }
+    //  iterator ret = *this;
+    //  this->current = this->current->prev;
+    //  return ret;
+    //}
+
+    ////prefix
+    //iterator& operator--() {
+    //  if (this->current != nullptr) {
+    //    this->current = this->current->prev;
+    //  }
+    //  else {
+    //    this->current = this->list.back;
+    //  }
+    //  return *this;
+    //}
+
+
+    iterator& operator=(const iterator& rhs) {
+      this->current = rhs.current;
+      return *this;
+    }
+
+  };
+
+
+  LinkedList()
     : nodeCount(0)
     , front(nullptr)
     , back(nullptr)
@@ -120,7 +181,10 @@ public:
   LinkedList(const LinkedList& rhs)
   {
     if (&rhs != this) {
-      clear();
+      nodeCount = 0;
+      front = nullptr;
+      back = nullptr;
+
       copy_nodes(rhs);
     }
 
@@ -128,7 +192,6 @@ public:
 
   LinkedList& operator=(const LinkedList& rhs) {
     if (&rhs != this) {
-      clear();
       copy_nodes(rhs);
     }
     return *this;
@@ -151,7 +214,7 @@ public:
   }
 
   //TODO: make this argument const
-  bool operator==(LinkedList& rhs) {
+  bool operator==(const LinkedList& rhs) {
 
     if (&rhs == this) {
       return true;
@@ -185,23 +248,22 @@ public:
   }
 
   iterator begin() {
-    return iterator(*this, front);
+    return { front };
   }
 
   iterator end() {
-    return iterator(*this, nullptr);
+    return { nullptr };
   }
 
-  ////TODO: implement const iterators
-  //const iterator begin() const {
-  //  return iterator(*this, front);
-  //}
+  const_iterator begin() const {
+    return  { front };
+  }
 
-  //const iterator end() const {
-  //  return iterator(*this, nullptr);
-  //}
+  const_iterator end() const {
+    return { nullptr };
+  }
 
-  iterator push_front(const T& value) {
+  void push_front(const T& value) {
     Node * toAdd = new Node(value);
     toAdd->next = front;
     front = toAdd;
@@ -209,10 +271,9 @@ public:
     if (1 == nodeCount) {
       back = front;
     }
-    return iterator(*this, front);
   }
 
-  iterator push_back(const T& value) {
+  void push_back(const T& value) {
     Node * toAdd = new Node(value);
 
     if (nullptr != back) {
@@ -223,9 +284,7 @@ public:
     else {
       front = back = toAdd; 
     }
-
     ++nodeCount;
-    return iterator(*this, back);
   }
 
   iterator insert(iterator position, const T& value) {
@@ -235,11 +294,14 @@ public:
     position.current->prev = toAdd;
     toAdd->next = position.current;
     ++nodeCount;
-    return iterator(*this, toAdd);
+    return { toAdd };
   }
 
   iterator erase(iterator position) {
     Node * toRemove = position.current;
+    if (toRemove == nullptr) {
+      return end();
+    }
     if (toRemove->prev == nullptr) {
       pop_front();
       return begin();
@@ -250,7 +312,7 @@ public:
     }
 
     toRemove->prev->next = toRemove->next;
-    iterator nextPosition = iterator(*this, toRemove->next);
+    iterator nextPosition = { toRemove->next };
     delete toRemove;
     toRemove = NULL;
     --nodeCount;

@@ -10,10 +10,10 @@
 using namespace std;
 
 template<typename Container>
-void print_container(Container container) {
-  auto itr = begin(container);
-  while (itr != end(container)) {
-    cout << ", " << *itr++;
+void print_container(const Container container) {
+  auto itr = --end(container);
+  while (itr != begin(container)) {
+    cout << ", " << *itr--;
   }
   cout << endl;
 }
@@ -32,10 +32,10 @@ int main()
 
   assert(copy_list == my_list && "copied list was not the same");
 
-  //print_container(stl_list);
+  print_container(stl_list);
   //print_container(my_list);
 
-  //auto first = my_list.begin();
+  auto first = my_list.begin();
   //auto last = my_list.end()--;
 
   //while (last != my_list.end()) {
