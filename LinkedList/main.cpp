@@ -1,6 +1,7 @@
 #include "LinkedList.h"
 #include "Stack.h"
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <list>
 #include <stack>
@@ -11,11 +12,12 @@ using namespace std;
 
 template<typename Container>
 void print_container(const Container container) {
-  auto itr = --end(container);
-  while (itr != begin(container)) {
-    cout << ", " << *itr--;
+  stringstream ss;
+  for (auto i = container.begin(); i != container.end(); ++i) {
+    ss << *i << ", ";
   }
-  cout << endl;
+  ss.seekp(-2, ss.cur);
+  cout << ss.str() << endl;
 }
 
 int main()
@@ -23,19 +25,39 @@ int main()
 
   list<string> stl_list;
   LinkedList<string> my_list;
+
+  //auto b_position = find(my_list.begin(), my_list.end(), "B");
+  //auto beforeB = my_list.insert(b_position, "before B");
+
+  stl_list.insert(stl_list.end(), "foo");
+
   for (int i = 'A'; i < 'Z' + 1; ++i) {
     stl_list.push_back(string(1, i));
     my_list.push_back(string(1, i));
   }
+  
+  //stl_list.insert(stl_list.end(), "foo");
+
+  my_list.insert(my_list.begin(), "front");
+  my_list.insert(my_list.end(), "back");
+
+  my_list.erase(my_list.begin());
+  my_list.erase(--my_list.end());
+  print_container(my_list);
+
+  auto x_position = find(my_list.begin(), my_list.end(), "X");
+  auto beforeX = my_list.insert(x_position, "before X");
+  print_container(my_list);
+  my_list.erase(beforeX);
+  print_container(my_list);
 
   LinkedList<string> copy_list = my_list;
 
   assert(copy_list == my_list && "copied list was not the same");
 
-  print_container(stl_list);
-  //print_container(my_list);
-
-  auto first = my_list.begin();
+  my_list.pop_back();
+  my_list.pop_front();
+  print_container(my_list);
   //auto last = my_list.end()--;
 
   //while (last != my_list.end()) {
