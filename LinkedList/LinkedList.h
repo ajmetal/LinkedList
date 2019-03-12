@@ -28,8 +28,9 @@ public:
 
   public:
 
-    const_iterator(Node * start = nullptr)
-      : current(start)
+    const_iterator(const LinkedList<T> & list, Node * start = nullptr)
+      : list{&list} ,
+      current(start)
     { }
 
     const T& operator*() const {
@@ -87,6 +88,7 @@ public:
       return current->value;
     }
 
+    const LinkedList<T> * list;
     Node * current;
 
   };//end const iterator
@@ -95,8 +97,9 @@ public:
     
   public:
 
-    iterator(Node * start = nullptr) 
-      : const_iterator{ start } {
+    iterator(LinkedList<T> & list, Node * start = nullptr) 
+      : const_iterator{ list, start } 
+    {
       this->current = start;
     }
 
@@ -164,12 +167,12 @@ public:
   //move constructor
   LinkedList(LinkedList && rhs)
     : nodeCount{ rhs.nodeCount },
-    front{ rhs.front },
-    back{ rhs.back }
+    head{ rhs.head },
+    tail{ rhs.tail }
   {
     rhs.nodeCount = 0;
-    rhs.front = nullptr;
-    rhs.back = nullptr;
+    rhs.head = nullptr;
+    rhs.tail = nullptr;
   }
 
   //copy assignment
@@ -191,8 +194,8 @@ public:
     if (&rhs != this) {
       erase(begin(), end());
 
-      front = std::move(rhs.front);
-      back = std::move(rhs.back);
+      head = std::move(rhs.head);
+      tail = std::move(rhs.tail);
       nodeCount = std::move(rhs.nodeCount);
     }
     return *this;
@@ -202,13 +205,12 @@ public:
   ~LinkedList()
   {
     erase(begin(), end());
-    delete front;
-    delete back;
+    delete head;
+    delete tail;
   }
 
 
   bool operator==(const LinkedList& rhs) {
-
     if (&rhs == this) {
       return true;
     }
@@ -227,9 +229,11 @@ public:
       ++left;
       ++right;
     }
-
     return true;
+  }
 
+  bool operator!=(const LinkedList& rhs) {
+    return !(*this == rhs);
   }
 
   int size() const {
@@ -241,34 +245,53 @@ public:
   }
 
   iterator begin() {
-    return { front->next };
+    return { *this, head->next };
   }
 
   iterator end() {
-    return { back };
+    return { *this, tail };
   }
 
   const_iterator begin() const {
-    return  { front->next };
+    return  { *this, head->next };
   }
 
   const_iterator end() const {
-    return { back };
+    return { *this, tail };
   }
 
+  //copy semantics insert
   iterator insert(iterator position, const T& value) {
+    assert(is_iterator_valid(position) && "Invalid iterator");
     if (nodeCount == 0) {
-      Node * toAdd = new Node(value, front, back);
-      back->prev = front->next = toAdd;
+      Node * toAdd = new Node(value, head, tail);
+      tail->prev = head->next = toAdd;
       ++nodeCount;
-      return { toAdd };
+      return { *this, toAdd };
     }
 
     Node * current = position.current;
     Node * toAdd = new Node(value, current->prev, current);
     current->prev = current->prev->next = toAdd;
     ++nodeCount;
-    return { toAdd };
+    return { *this, toAdd };
+  }
+
+  //move semantics insert
+  iterator insert(iterator position, T&& value) {
+    assert(is_iterator_valid(position) && "Invalid iterator");
+    if (nodeCount == 0) {
+      Node * toAdd = new Node(move(value), head, tail);
+      tail->prev = head->next = toAdd;
+      ++nodeCount;
+      return { *this, toAdd };
+    }
+
+    Node * current = position.current;
+    Node * toAdd = new Node(move(value), current->prev, current);
+    current->prev = current->prev->next = toAdd;
+    ++nodeCount;
+    return { *this, toAdd };
   }
 
   void push_front(const T& value) {
@@ -280,12 +303,11 @@ public:
   }
 
   iterator erase(iterator position) {
-    assert(position.current != back && "An attempt was made to erase the end of a list");
-    
+    assert(is_iterator_valid(position) && position.current != tail && "Invalid iterator");
     Node * toRemove = position.current;
     toRemove->prev->next = toRemove->next;
     toRemove->next->prev = toRemove->prev;
-    iterator nextPosition = { toRemove->next };
+    iterator nextPosition = { *this, toRemove->next };
     delete toRemove;
     toRemove = NULL;
     --nodeCount;
@@ -305,33 +327,45 @@ public:
     initialize();
   }
 
-  T pop_front() {
+  T pop_head() {
     auto first = begin();
     T value = *first;
     erase(first);
     return value;
   }
 
-  T pop_back() {
+  T pop_tail() {
     auto last = --end();
     T value = *last;
     erase(last);
     return value;
   }
 
+  T& front() {
+    return head->next->value;
+  }
+
+  T& back() {
+    return tail->prev->value;
+  }
+
 
 private:
 
-  void initialize() {
-    nodeCount = 0;
-    front = new Node();
-    back = new Node();
-    front->next = back;
-    back->prev = front;
+  bool is_iterator_valid(const const_iterator& itr) {
+    return (itr.list == this && itr.current != nullptr);
   }
 
-  Node * front;
-  Node * back;
+  void initialize() {
+    nodeCount = 0;
+    head = new Node();
+    tail = new Node();
+    head->next = tail;
+    tail->prev = head;
+  }
+
+  Node * head;
+  Node * tail;
   int nodeCount;
 
 };

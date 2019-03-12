@@ -13,8 +13,8 @@ using namespace std;
 template<class Container>
 void print_container(const Container container) {
   stringstream ss;
-  for (auto i = container.begin(); i != container.end(); ++i) {
-    ss << *i << ", ";
+  for (auto & i : container) {
+    ss << string(i) << ", ";
   }
   ss.seekp(-2, ss.cur);
   cout << ss.str() << endl;
@@ -23,96 +23,54 @@ void print_container(const Container container) {
 int main()
 {
 
-  list<string> stl_list;
-  LinkedList<string> my_list;
+  //list<string> stl_list;
+  LinkedList<string> string_list;
 
-  //auto b_position = find(my_list.begin(), my_list.end(), "B");
-  //auto beforeB = my_list.insert(b_position, "before B");
-
-  stl_list.insert(stl_list.end(), "foo");
 
   for (int i = 'A'; i < 'Z' + 1; ++i) {
-    stl_list.push_back(move(string(1, i)));
-    my_list.push_back(move(string(1, i)));
+    string_list.push_back(move(string(1, i)));
   }
+  print_container(string_list);
 
-  for (auto & i : my_list) {
-    cout << i << ", ";
-  }
+  string_list.insert(string_list.begin(), "front");
+  string_list.insert(string_list.end(), "back");
 
-  cout << endl;
-  
-  //stl_list.insert(stl_list.end(), "foo");
+  string_list.erase(string_list.begin());
+  string_list.erase(--string_list.end());
 
-  LinkedList<string> copycopy = my_list;
-  LinkedList<string> movecopy = move(my_list);
+  print_container(string_list);
 
-  my_list.insert(my_list.begin(), "front");
-  my_list.insert(my_list.end(), "back");
+  auto x_position = find(string_list.begin(), string_list.end(), "X");
+  auto beforeX = string_list.insert(x_position, "before X");
+  print_container(string_list);
+  string_list.erase(beforeX);
+  print_container(string_list);
 
-  my_list.erase(my_list.begin());
-  my_list.erase(--my_list.end());
-  print_container(my_list);
+  LinkedList<string> copy_list = string_list;
 
-  auto x_position = find(my_list.begin(), my_list.end(), "X");
-  auto beforeX = my_list.insert(x_position, "before X");
-  print_container(my_list);
-  my_list.erase(beforeX);
-  print_container(my_list);
+  assert(copy_list == string_list && "copied list was not the same");
 
-  LinkedList<string> copy_list = my_list;
+  copy_list.push_back("different");
 
-  assert(copy_list == my_list && "copied list was not the same");
+  assert(copy_list != string_list && "lists weren't different");
 
-  my_list.pop_back();
-  my_list.pop_front();
-  print_container(my_list);
-  //auto last = my_list.end()--;
+  copy_list.erase(find(copy_list.begin(), copy_list.end(), "Z"), copy_list.end());
+  copy_list.push_back("7");
 
-  //while (last != my_list.end()) {
-  //  if (*last == "R") break;
-  //  --last;
-  //}
-  //
-  ////auto r_position = find(stl_list.begin(), stl_list.end(), "R");
+  assert(copy_list.back() == "7" && "back() returned the wrong value");
 
-  //auto x_pos = find_if(my_list.begin(), my_list.end(), [](string s) {
-  //  return (s == "X");
-  //});
+  copy_list.back() = "9";
 
-  //stl_list.insert(r_position, "7");
-  //auto s_position = stl_list.erase(stl_list.begin(), r_position);
-  //printList(stl_list);
+  assert(copy_list.back() == "9" && "value wasn't changed from outside list");
 
-  //auto my_r = find(my_list.begin(), my_list.end(), "R");
-  //my_list.insert(my_r, "7");
-  //printList(my_list);
-  //auto my_s = my_list.erase(my_list.begin(), my_r);
+  copy_list.push_front("7");
 
-  //stack<string> stl_stack;
-  //Stack<string> my_stack;
+  assert(copy_list.front() == "7" && "back() returned the wrong value");
 
-  //for (int i = 'A'; i < 'Z' + 1; ++i) {
-  //  stl_stack.push(string(1, i));
-  //  my_stack.push(string(1, i));
-  //}
+  copy_list.front() = "9";
 
-  //my_stack.top() = "7";
+  assert(copy_list.front() == "9" && "value wasn't changed from outside list");
 
-  //int size = my_stack.size();
-  //for (int i = 0; i < size; ++i) {
-  //  cout << my_stack.pop() << ", ";
-  //}
-
-  //cout << endl;
-
-  //for (int i = 0; i < size; ++i) {
-  //  cout << stl_stack.top() << ", ";
-  //  stl_stack.pop();
-  //}
-
-  //cout << endl;
-
-
+  assert(copy_list != string_list && "lists weren't different");
 
 }
