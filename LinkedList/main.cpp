@@ -10,7 +10,7 @@
 
 using namespace std;
 
-template<typename Container>
+template<class Container>
 void print_container(const Container container) {
   stringstream ss;
   for (auto i = container.begin(); i != container.end(); ++i) {
@@ -32,11 +32,20 @@ int main()
   stl_list.insert(stl_list.end(), "foo");
 
   for (int i = 'A'; i < 'Z' + 1; ++i) {
-    stl_list.push_back(string(1, i));
-    my_list.push_back(string(1, i));
+    stl_list.push_back(move(string(1, i)));
+    my_list.push_back(move(string(1, i)));
   }
+
+  for (auto & i : my_list) {
+    cout << i << ", ";
+  }
+
+  cout << endl;
   
   //stl_list.insert(stl_list.end(), "foo");
+
+  LinkedList<string> copycopy = my_list;
+  LinkedList<string> movecopy = move(my_list);
 
   my_list.insert(my_list.begin(), "front");
   my_list.insert(my_list.end(), "back");

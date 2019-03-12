@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <utility>
 
 template<class T>
 class LinkedList {
@@ -88,7 +89,7 @@ public:
 
     Node * current;
 
-  };
+  };//end const iterator
 
   class iterator : public const_iterator {
     
@@ -140,45 +141,71 @@ public:
       return *this;
     }
 
-  };
+  };//end iterator
 
-
+  //default constructor
   LinkedList()
   {
     initialize();
   }
 
+  //copy constructor
   LinkedList(const LinkedList& rhs)
   {
     if (&rhs != this) {
 
       initialize();
-      copy_nodes(rhs);
+      for (auto & i : rhs) {
+        push_back(i);
+      }
     }
   }
 
+  //move constructor
+  LinkedList(LinkedList && rhs)
+    : nodeCount{ rhs.nodeCount },
+    front{ rhs.front },
+    back{ rhs.back }
+  {
+    rhs.nodeCount = 0;
+    rhs.front = nullptr;
+    rhs.back = nullptr;
+  }
+
+  //copy assignment
   LinkedList& operator=(const LinkedList& rhs) {
     if (&rhs != this) {
-      copy_nodes(rhs);
-    }
+
+      //copy the data we want to a local variable
+      LinkedList copy = rhs;
+      //swap this list with the copy
+      std::swap(*this, copy);
+
+    }//copy destructor is called, cleaning up the data we don't want
+
     return *this;
   }
 
+  //move assignment
   LinkedList& operator=(LinkedList&& rhs) {
     if (&rhs != this) {
       erase(begin(), end());
 
-      front = rhs.front;
-      back = rhs.back;
-      nodeCount = rhs.nodeCount;
-
-      rhs.front = nullptr;
-      rhs.back = nullptr;
-      rhs.nodeCount = 0;
-      
+      front = std::move(rhs.front);
+      back = std::move(rhs.back);
+      nodeCount = std::move(rhs.nodeCount);
     }
     return *this;
   }
+
+  //destructor
+  ~LinkedList()
+  {
+    erase(begin(), end());
+    delete front;
+    delete back;
+  }
+
 
   bool operator==(const LinkedList& rhs) {
 
@@ -229,14 +256,6 @@ public:
     return { back };
   }
 
-  void push_front(const T& value) {
-    insert(begin(), value);
-  }
-
-  void push_back(const T& value) {
-    insert(end(), value);
-  }
-
   iterator insert(iterator position, const T& value) {
     if (nodeCount == 0) {
       Node * toAdd = new Node(value, front, back);
@@ -250,6 +269,14 @@ public:
     current->prev = current->prev->next = toAdd;
     ++nodeCount;
     return { toAdd };
+  }
+
+  void push_front(const T& value) {
+    insert(begin(), value);
+  }
+
+  void push_back(const T& value) {
+    insert(end(), value);
   }
 
   iterator erase(iterator position) {
@@ -292,23 +319,8 @@ public:
     return value;
   }
 
-  ~LinkedList()
-  {
-    erase(begin(), end());
-  }
 
 private:
-
-  void copy_nodes(const LinkedList& rhs) {
-
-    if (rhs.nodeCount == 0) {
-      return;
-    }
-
-    for (auto i = rhs.begin(); i != rhs.end(); ++i) {
-      push_back(*i);
-    }
-  }
 
   void initialize() {
     nodeCount = 0;
