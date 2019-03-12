@@ -327,14 +327,14 @@ public:
     initialize();
   }
 
-  T pop_head() {
+  T pop_front() {
     auto first = begin();
     T value = *first;
     erase(first);
     return value;
   }
 
-  T pop_tail() {
+  T pop_back() {
     auto last = --end();
     T value = *last;
     erase(last);

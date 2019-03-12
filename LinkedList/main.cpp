@@ -1,5 +1,6 @@
 #include "LinkedList.h"
 #include "Stack.h"
+#include "Queue.h"
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -11,7 +12,7 @@
 using namespace std;
 
 template<class Container>
-void print_container(const Container container) {
+void print_container(const Container & container) {
   stringstream ss;
   for (auto & i : container) {
     ss << string(i) << ", ";
@@ -25,7 +26,6 @@ int main()
 
   //list<string> stl_list;
   LinkedList<string> string_list;
-
 
   for (int i = 'A'; i < 'Z' + 1; ++i) {
     string_list.push_back(move(string(1, i)));
@@ -72,5 +72,19 @@ int main()
   assert(copy_list.front() == "9" && "value wasn't changed from outside list");
 
   assert(copy_list != string_list && "lists weren't different");
+
+  Queue<int> q;
+
+  auto x = 11;
+
+  for (int i = 1; i < 11; ++i) {
+    q.enqueue(i);
+  }
+
+  while (q.size() > 0) {
+    cout << q.dequeue() << ", ";
+  }
+
+  cout << endl;
 
 }
